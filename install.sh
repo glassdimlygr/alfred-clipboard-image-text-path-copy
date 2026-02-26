@@ -4,8 +4,8 @@ set -euo pipefail
 # install.sh — Install the Clipboard Image to Path workflow for Alfred 4+
 #
 # Usage:
-#   git clone https://github.com/glassdimly/alfred-clipboard-image.git
-#   cd alfred-clipboard-image
+#   git clone https://github.com/glassdimly/alfred-clipboard-image-text-path-copy.git
+#   cd alfred-clipboard-image-text-path-copy
 #   ./install.sh
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"

@@ -13,8 +13,8 @@ Works with Lightshot, macOS screenshots, browser copies, GIMP, and anything else
 ## Install
 
 ```sh
-git clone https://github.com/glassdimly/alfred-clipboard-image.git
-cd alfred-clipboard-image
+git clone https://github.com/glassdimly/alfred-clipboard-image-text-path-copy.git
+cd alfred-clipboard-image-text-path-copy
 ./install.sh
 ```
 
@@ -52,6 +52,10 @@ Delete the workflow from Alfred Preferences, then:
 ```sh
 rm -rf ~/.config/alfred/clipboard-image
 ```
+
+## Note
+
+This workflow was AI-generated using [OpenCode](https://opencode.ai) with Claude.
 
 ## License
 

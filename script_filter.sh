@@ -2,8 +2,8 @@
 # Script Filter for Alfred: grabs clipboard image + lists clipboard history
 # Priority: live clipboard capture (for Lightshot etc), then Alfred DB history
 #
-# Part of alfred-clipboard-image workflow
-# https://github.com/glassdimly/alfred-clipboard-image
+# Part of alfred-clipboard-image-text-path-copy workflow
+# https://github.com/glassdimly/alfred-clipboard-image-text-path-copy
 
 DB="$HOME/Library/Application Support/Alfred/Databases/clipboard.alfdb"
 DATA_DIR="$HOME/Library/Application Support/Alfred/Databases/clipboard.alfdb.data"
