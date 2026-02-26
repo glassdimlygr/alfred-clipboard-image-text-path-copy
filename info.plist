@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>bundleid</key>
+	<string>com.glassdimly.alfred.clipboard-image</string>
+	<key>connections</key>
+	<dict>
+		<key>A1B2C3D4-E5F6-7890-ABCD-EF1234567890</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>C0C0C0C0-DEAD-BEEF-CAFE-123456789ABC</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+			</dict>
+		</array>
+	</dict>
+	<key>createdby</key>
+	<string>glassdimly</string>
+	<key>description</key>
+	<string>Save clipboard images to disk and copy the file path. Works with Lightshot and other screenshot tools.</string>
+	<key>disabled</key>
+	<false/>
+	<key>name</key>
+	<string>Clipboard Image to Path</string>
+	<key>objects</key>
+	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>0</integer>
+				<key>escaping</key>
+				<integer>110</integer>
+				<key>keyword</key>
+				<string>img</string>
+				<key>runningsubtext</key>
+				<string>Loading clipboard images...</string>
+				<key>script</key>
+				<string>./script_filter.sh "{query}"</string>
+				<key>subtext</key>
+				<string>Browse clipboard image history</string>
+				<key>title</key>
+				<string>Clipboard Images</string>
+				<key>type</key>
+				<integer>0</integer>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.scriptfilter</string>
+			<key>uid</key>
+			<string>A1B2C3D4-E5F6-7890-ABCD-EF1234567890</string>
+			<key>version</key>
+			<integer>3</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>autopaste</key>
+				<false/>
+				<key>clipboardtext</key>
+				<string>{query}</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.output.clipboard</string>
+			<key>uid</key>
+			<string>C0C0C0C0-DEAD-BEEF-CAFE-123456789ABC</string>
+			<key>version</key>
+			<integer>0</integer>
+		</dict>
+	</array>
+	<key>uidata</key>
+	<dict>
+		<key>A1B2C3D4-E5F6-7890-ABCD-EF1234567890</key>
+		<dict>
+			<key>xpos</key>
+			<integer>100</integer>
+			<key>ypos</key>
+			<integer>200</integer>
+		</dict>
+		<key>C0C0C0C0-DEAD-BEEF-CAFE-123456789ABC</key>
+		<dict>
+			<key>xpos</key>
+			<integer>400</integer>
+			<key>ypos</key>
+			<integer>200</integer>
+		</dict>
+	</dict>
+</dict>
+</plist>
