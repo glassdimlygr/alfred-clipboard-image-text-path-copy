@@ -12,11 +12,35 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 BUNDLE_ID="com.glassdimly.alfred.clipboard-image"
 
 # --- Locate Alfred workflows directory ---
-ALFRED_PREFS="$HOME/Library/Application Support/Alfred/Alfred.alfredpreferences/workflows"
+# Alfred lets users set a custom sync folder (Preferences > Advanced > Set preferences folder).
+# When set, workflows live at {syncfolder}/Alfred.alfredpreferences/workflows/ instead of the
+# default ~/Library/Application Support/Alfred/Alfred.alfredpreferences/workflows/.
+# We read this from Alfred's preferences plist, falling back to the default location.
+
+ALFRED_PREFS=""
+sync_folder=$(defaults read com.runningwithcrayons.Alfred-Preferences syncfolder 2>/dev/null || true)
+if [ -n "$sync_folder" ]; then
+  # Expand ~ to $HOME (defaults read returns literal ~)
+  sync_folder="${sync_folder/#\~/$HOME}"
+  candidate="${sync_folder}/Alfred.alfredpreferences/workflows"
+  if [ -d "$candidate" ]; then
+    ALFRED_PREFS="$candidate"
+  fi
+fi
+
+# Fall back to default location
+if [ -z "$ALFRED_PREFS" ]; then
+  ALFRED_PREFS="$HOME/Library/Application Support/Alfred/Alfred.alfredpreferences/workflows"
+fi
 
 if [ ! -d "$ALFRED_PREFS" ]; then
-  echo "Error: Alfred workflows directory not found at:"
-  echo "  $ALFRED_PREFS"
+  echo "Error: Alfred workflows directory not found."
+  echo ""
+  echo "Checked:"
+  if [ -n "$sync_folder" ]; then
+    echo "  ${sync_folder}/Alfred.alfredpreferences/workflows/"
+  fi
+  echo "  ~/Library/Application Support/Alfred/Alfred.alfredpreferences/workflows/"
   echo ""
   echo "Make sure Alfred 4 or 5 is installed and has been launched at least once."
   exit 1
