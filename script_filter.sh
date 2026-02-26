@@ -1,63 +1,88 @@
 #!/bin/bash
+set -u
 # Script Filter for Alfred: grabs clipboard image + lists clipboard history
 # Priority: live clipboard capture (for Lightshot etc), then Alfred DB history
 #
 # Part of alfred-clipboard-image-text-path-copy workflow
 # https://github.com/glassdimly/alfred-clipboard-image-text-path-copy
 
-DB="$HOME/Library/Application Support/Alfred/Databases/clipboard.alfdb"
-DATA_DIR="$HOME/Library/Application Support/Alfred/Databases/clipboard.alfdb.data"
-IMAGES_DIR="$HOME/.config/alfred/clipboard-image/images"
+readonly DB="$HOME/Library/Application Support/Alfred/Databases/clipboard.alfdb"
+readonly DATA_DIR="$HOME/Library/Application Support/Alfred/Databases/clipboard.alfdb.data"
+readonly IMAGES_DIR="$HOME/.config/alfred/clipboard-image/images"
 
 # Core Data epoch offset (Jan 1, 2001 00:00:00 UTC -> Unix epoch)
-EPOCH_OFFSET=978307200
+readonly EPOCH_OFFSET=978307200
 now=$(date +%s)
 mkdir -p "$IMAGES_DIR"
 
 # Non-blocking cleanup of images older than 7 days
 find "$IMAGES_DIR" -name "*.png" -mtime +7 -delete &
 
+# Escape a string for safe JSON embedding (backslashes, quotes, newlines, tabs)
+json_escape() {
+  printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g; s/	/\\t/g' | tr -d '\n\r'
+}
+
 items=""
 first=true
 
 # --- Live clipboard image (catches Lightshot and anything Alfred misses) ---
-has_image=$(osascript -e 'try' -e 'the clipboard as «class PNGf»' -e 'return "yes"' -e 'on error' -e 'return "no"' -e 'end try' 2>/dev/null)
+# Single osascript call: try PNGf first, then TIFF, write directly to file.
+# $clip_path is built from hardcoded $IMAGES_DIR and integer $now — safe to interpolate.
+clip_path="${IMAGES_DIR}/clipboard-${now}.png"
+clip_result=$(osascript \
+  -e 'try' \
+  -e '  set png_data to the clipboard as «class PNGf»' \
+  -e "  set fp to open for access POSIX file \"${clip_path}\" with write permission" \
+  -e '  write png_data to fp' \
+  -e '  close access fp' \
+  -e '  return "ok"' \
+  -e 'on error' \
+  -e '  try' \
+  -e '    set tiff_data to the clipboard as «class TIFF»' \
+  -e "    set fp to open for access POSIX file \"${clip_path}\" with write permission" \
+  -e '    write tiff_data to fp' \
+  -e '    close access fp' \
+  -e '    return "tiff"' \
+  -e '  on error' \
+  -e '    return "no"' \
+  -e '  end try' \
+  -e 'end try' 2>/dev/null)
 
-if [ "$has_image" = "yes" ]; then
-  clip_file="clipboard-${now}.png"
-  clip_path="${IMAGES_DIR}/${clip_file}"
+if [ "$clip_result" = "tiff" ] && [ -f "$clip_path" ]; then
+  # Convert TIFF capture to PNG in place
+  tiff_tmp="${clip_path}.tiff"
+  mv "$clip_path" "$tiff_tmp"
+  sips -s format png "$tiff_tmp" --out "$clip_path" >/dev/null 2>&1
+  rm -f "$tiff_tmp"
+fi
 
-  osascript \
-    -e 'set png_data to the clipboard as «class PNGf»' \
-    -e "set fp to open for access POSIX file \"${clip_path}\" with write permission" \
-    -e 'write png_data to fp' \
-    -e 'close access fp' 2>/dev/null
-
-  if [ -f "$clip_path" ] && [ -s "$clip_path" ]; then
-    dims=$(sips -g pixelWidth -g pixelHeight "$clip_path" 2>/dev/null \
-      | awk '/pixelWidth/{w=$2} /pixelHeight/{h=$2} END{print w"x"h}')
-    sz=$(stat -f%z "$clip_path")
-    if [ "$sz" -gt 1048576 ]; then
-      sz_human="$(( sz / 1048576 )).$(( sz % 1048576 / 104858 )) MB"
-    else
-      sz_human="$(( sz / 1024 )) KB"
-    fi
-    first=false
-    items="{\"title\":\"Current clipboard: ${dims} (${sz_human})\",\"subtitle\":\"Save and copy path\",\"arg\":\"${clip_path}\"}"
+if [ "$clip_result" != "no" ] && [ -f "$clip_path" ] && [ -s "$clip_path" ]; then
+  dims=$(sips -g pixelWidth -g pixelHeight "$clip_path" 2>/dev/null \
+    | awk '/pixelWidth/{w=$2} /pixelHeight/{h=$2} END{print w"x"h}')
+  sz=$(stat -f%z "$clip_path")
+  if [ "$sz" -gt 1048576 ]; then
+    sz_human="$(( sz / 1048576 )).$(( sz % 1048576 / 104858 )) MB"
+  else
+    sz_human="$(( sz / 1024 )) KB"
   fi
+  first=false
+  items="{\"title\":\"Current clipboard: ${dims} (${sz_human})\",\"subtitle\":\"Save and copy path\",\"arg\":\"${clip_path}\"}"
 fi
 
 # --- Alfred clipboard DB history ---
 if [ -f "$DB" ]; then
-  rows=$(sqlite3 -separator '|' "$DB" \
-    "SELECT item, ts, app, dataHash FROM clipboard WHERE dataType=1 AND dataHash != '' ORDER BY ts DESC")
+  # Use unit separator (0x1f) to avoid field splitting on pipes in item text
+  rows=$(sqlite3 -separator $'\x1f' "$DB" \
+    "SELECT item, ts, app, dataHash FROM clipboard WHERE dataType=1 AND dataHash != '' ORDER BY ts DESC LIMIT 20")
 
-  while IFS='|' read -r item ts app hash; do
+  [ -z "$rows" ] || while IFS=$'\x1f' read -r item ts app hash; do
     [ -z "$hash" ] && continue
     tiff_path="$DATA_DIR/${hash}"
     [ -f "$tiff_path" ] || continue
 
-    short_hash=$(echo "$hash" | cut -c1-8)
+    # 16-char prefix reduces collision risk vs 8-char
+    short_hash=$(echo "$hash" | cut -c1-16)
     png_path="${IMAGES_DIR}/${short_hash}.png"
     if [ ! -f "$png_path" ]; then
       sips -s format png "$tiff_path" --out "$png_path" >/dev/null 2>&1
@@ -88,8 +113,8 @@ if [ -f "$DB" ]; then
       subtitle="${rel}"
     fi
 
-    title=$(echo "$title" | sed 's/"/\\"/g')
-    subtitle=$(echo "$subtitle" | sed 's/"/\\"/g')
+    title=$(json_escape "$title")
+    subtitle=$(json_escape "$subtitle")
 
     if [ "$first" = true ]; then
       first=false

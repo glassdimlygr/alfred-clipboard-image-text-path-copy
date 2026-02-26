@@ -40,7 +40,7 @@
 				<key>runningsubtext</key>
 				<string>Loading clipboard images...</string>
 				<key>script</key>
-				<string>./script_filter.sh "{query}"</string>
+				<string>./script_filter.sh</string>
 				<key>subtext</key>
 				<string>Browse clipboard image history</string>
 				<key>title</key>
@@ -48,7 +48,7 @@
 				<key>type</key>
 				<integer>0</integer>
 				<key>withspace</key>
-				<true/>
+				<false/>
 			</dict>
 			<key>type</key>
 			<string>alfred.workflow.input.scriptfilter</string>
