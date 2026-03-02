@@ -7,7 +7,7 @@ Works with Lightshot, macOS screenshots, browser copies, GIMP, and anything else
 ## Requirements
 
 - macOS
-- [Alfred 4+](https://www.alfredapp.com/) with Powerpack
+- [Alfred 4 or 5](https://www.alfredapp.com/) with Powerpack
 - Clipboard History enabled in Alfred (Preferences > Features > Clipboard History > Keep Images)
 
 ## Install
@@ -30,12 +30,33 @@ To update, `git pull` and run `./install.sh` again.
 
 Below the current clipboard item, you'll also see images from Alfred's clipboard history with relative timestamps ("2 min ago", "yesterday", etc.).
 
+![Workflow results showing current clipboard and history items](screenshots/usage.png)
+
+![Workflow in Alfred Preferences](screenshots/workflow.png)
+
+## Configuration
+
+### Image Retention Period
+
+By default, saved images are automatically cleaned up after **7 days**. You can change this:
+
+- **Alfred 5**: Click "Configure Workflow..." in Alfred Preferences and set "Image Retention (days)"
+- **Alfred 4**: Set the `cleanup_days` environment variable in the workflow's configuration (Alfred Preferences > Workflows > Clipboard Image to Path > the `[x]` icon)
+
+Set to `0` to disable automatic cleanup entirely.
+
 ## How it works
 
 - **Live clipboard capture**: Uses `osascript` to grab PNG data directly from the system pasteboard. This catches apps like Lightshot where Alfred's own clipboard history fails to persist the image data.
 - **Alfred clipboard history**: Queries Alfred's `clipboard.alfdb` SQLite database for previously copied images and converts the stored TIFF files to PNG.
-- **Auto-cleanup**: Images older than 7 days in `~/.config/alfred/clipboard-image/images/` are deleted automatically.
+- **Auto-cleanup**: Images older than the configured retention period (default: 7 days) in `~/.config/alfred/clipboard-image/images/` are deleted automatically. See [Configuration](#configuration).
 - **Caching**: Converted images use content-hash filenames to avoid duplicate conversions.
+
+## Compatibility
+
+This workflow supports both Alfred 4 and Alfred 5. The `info.plist` includes keys required by Alfred 5 (e.g. `version`, `readme`, `vitoclose`) which are safely ignored by Alfred 4.
+
+The installer auto-creates the `workflows/` directory if it doesn't exist, which can happen on fresh Alfred 5 installations that haven't had any workflows installed yet.
 
 ## Files
 

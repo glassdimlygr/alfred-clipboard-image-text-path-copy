@@ -15,6 +15,8 @@
 				<integer>0</integer>
 				<key>modifiersubtext</key>
 				<string></string>
+				<key>vitoclose</key>
+				<false/>
 			</dict>
 		</array>
 	</dict>
@@ -31,16 +33,38 @@
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>argumenttype</key>
+				<key>alfredfiltersresults</key>
+				<false/>
+				<key>alfredfiltersresultsmatchmode</key>
 				<integer>0</integer>
+				<key>argumenttreatemptyqueryasnil</key>
+				<false/>
+				<key>argumenttrimmode</key>
+				<integer>0</integer>
+				<key>argumenttype</key>
+				<integer>1</integer>
 				<key>escaping</key>
 				<integer>110</integer>
 				<key>keyword</key>
 				<string>img</string>
+				<key>queuedelaycustom</key>
+				<integer>3</integer>
+				<key>queuedelayimmediatelyinitially</key>
+				<true/>
+				<key>queuedelaymode</key>
+				<integer>0</integer>
+				<key>queuemode</key>
+				<integer>1</integer>
 				<key>runningsubtext</key>
 				<string>Loading clipboard images...</string>
 				<key>script</key>
 				<string>./script_filter.sh</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>skipuniversalaction</key>
+				<false/>
 				<key>subtext</key>
 				<string>Browse clipboard image history</string>
 				<key>title</key>
@@ -73,22 +97,60 @@
 			<integer>0</integer>
 		</dict>
 	</array>
+	<key>userconfigurationconfig</key>
+	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>default</key>
+				<string>7</string>
+				<key>placeholder</key>
+				<string>Number of days</string>
+				<key>required</key>
+				<false/>
+				<key>trim</key>
+				<true/>
+			</dict>
+			<key>description</key>
+			<string>Number of days to keep saved clipboard images before automatic cleanup. Set to 0 to disable cleanup.</string>
+			<key>label</key>
+			<string>Image Retention (days)</string>
+			<key>type</key>
+			<string>textfield</string>
+			<key>variable</key>
+			<string>cleanup_days</string>
+		</dict>
+	</array>
+	<key>readme</key>
+	<string>Save clipboard images as PNG files and copy the file path to your clipboard.
+
+Works with Lightshot, macOS screenshots, browser copies, GIMP, and anything else that puts image data on the clipboard.
+
+Usage:
+1. Copy an image to the clipboard
+2. Open Alfred, type "img"
+3. Select an image and press Enter
+4. The file path is copied to your clipboard</string>
 	<key>uidata</key>
 	<dict>
 		<key>A1B2C3D4-E5F6-7890-ABCD-EF1234567890</key>
 		<dict>
 			<key>xpos</key>
-			<integer>100</integer>
+			<real>100</real>
 			<key>ypos</key>
-			<integer>200</integer>
+			<real>35</real>
 		</dict>
 		<key>C0C0C0C0-DEAD-BEEF-CAFE-123456789ABC</key>
 		<dict>
 			<key>xpos</key>
-			<integer>400</integer>
+			<real>400</real>
 			<key>ypos</key>
-			<integer>200</integer>
+			<real>35</real>
 		</dict>
 	</dict>
+	<key>version</key>
+	<string>1.1.0</string>
+	<key>webaddress</key>
+	<string>https://github.com/glassdimly/alfred-clipboard-image-text-path-copy</string>
 </dict>
 </plist>

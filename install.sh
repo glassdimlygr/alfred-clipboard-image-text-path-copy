@@ -33,17 +33,26 @@ if [ -z "$ALFRED_PREFS" ]; then
   ALFRED_PREFS="$HOME/Library/Application Support/Alfred/Alfred.alfredpreferences/workflows"
 fi
 
+# Alfred 5 may not pre-create the workflows/ directory. If the parent
+# Alfred.alfredpreferences directory exists, create workflows/ automatically.
 if [ ! -d "$ALFRED_PREFS" ]; then
-  echo "Error: Alfred workflows directory not found."
-  echo ""
-  echo "Checked:"
-  if [ -n "$sync_folder" ]; then
-    echo "  ${sync_folder}/Alfred.alfredpreferences/workflows/"
+  PREFS_PARENT="$(dirname "$ALFRED_PREFS")"
+  if [ -d "$PREFS_PARENT" ]; then
+    echo "Creating workflows directory at:"
+    echo "  $ALFRED_PREFS"
+    mkdir -p "$ALFRED_PREFS"
+  else
+    echo "Error: Alfred preferences directory not found."
+    echo ""
+    echo "Checked:"
+    if [ -n "$sync_folder" ]; then
+      echo "  ${sync_folder}/Alfred.alfredpreferences/workflows/"
+    fi
+    echo "  ~/Library/Application Support/Alfred/Alfred.alfredpreferences/workflows/"
+    echo ""
+    echo "Make sure Alfred 4 or 5 is installed and has been launched at least once."
+    exit 1
   fi
-  echo "  ~/Library/Application Support/Alfred/Alfred.alfredpreferences/workflows/"
-  echo ""
-  echo "Make sure Alfred 4 or 5 is installed and has been launched at least once."
-  exit 1
 fi
 
 # --- Check for existing installation ---
@@ -83,6 +92,9 @@ fi
 # --- Create images directory ---
 mkdir -p "$HOME/.config/alfred/clipboard-image/images"
 
+# --- Try to reload the workflow in Alfred ---
+osascript -e 'tell application id "com.runningwithcrayons.Alfred" to reload workflow "'"$BUNDLE_ID"'"' 2>/dev/null || true
+
 # --- Verify ---
 echo ""
 echo "Installed successfully."
@@ -94,6 +106,6 @@ echo "  3. Select an image and press Enter"
 echo "  4. The file path is now on your clipboard — paste it anywhere"
 echo ""
 echo "Saved images: ~/.config/alfred/clipboard-image/images/"
-echo "Images older than 7 days are automatically cleaned up."
+echo "Images are automatically cleaned up after 7 days (configurable)."
 echo ""
-echo "You may need to restart Alfred for the workflow to appear."
+echo "If the workflow doesn't appear, restart Alfred."

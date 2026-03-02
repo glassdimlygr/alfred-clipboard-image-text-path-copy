@@ -15,8 +15,18 @@ readonly EPOCH_OFFSET=978307200
 now=$(date +%s)
 mkdir -p "$IMAGES_DIR"
 
-# Non-blocking cleanup of images older than 7 days
-find "$IMAGES_DIR" -name "*.png" -mtime +7 -delete &
+# Configurable retention period (days). Set via Alfred workflow configuration
+# or cleanup_days environment variable. Defaults to 7 days. Set to 0 to disable.
+cleanup_days="${cleanup_days:-7}"
+# Validate: must be a non-negative integer
+case "$cleanup_days" in
+  ''|*[!0-9]*) cleanup_days=7 ;;
+esac
+
+# Non-blocking cleanup of images older than the retention period (0 = disabled)
+if [ "$cleanup_days" -gt 0 ] 2>/dev/null; then
+  find "$IMAGES_DIR" -name "*.png" -mtime +"$cleanup_days" -delete &
+fi
 
 # Escape a string for safe JSON embedding (backslashes, quotes, newlines, tabs)
 json_escape() {
@@ -57,6 +67,9 @@ if [ "$clip_result" = "tiff" ] && [ -f "$clip_path" ]; then
   rm -f "$tiff_tmp"
 fi
 
+# Strip macOS extended attributes (@ flag) from the saved file
+[ -f "$clip_path" ] && xattr -c "$clip_path" 2>/dev/null
+
 if [ "$clip_result" != "no" ] && [ -f "$clip_path" ] && [ -s "$clip_path" ]; then
   dims=$(sips -g pixelWidth -g pixelHeight "$clip_path" 2>/dev/null \
     | awk '/pixelWidth/{w=$2} /pixelHeight/{h=$2} END{print w"x"h}')
@@ -87,6 +100,7 @@ if [ -f "$DB" ]; then
     if [ ! -f "$png_path" ]; then
       sips -s format png "$tiff_path" --out "$png_path" >/dev/null 2>&1
       [ -f "$png_path" ] || continue
+      xattr -c "$png_path" 2>/dev/null
     fi
 
     unix_ts=$(echo "$ts" | awk -v off="$EPOCH_OFFSET" '{printf "%d", $1 + off}')
